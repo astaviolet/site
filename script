@@ -1,0 +1,55 @@
+-- Cria a ferramenta
+local Tool = Instance.new("Tool")
+Tool.Name = "Mina"
+Tool.RequiresHandle = true
+Tool.CanBeDropped = false
+
+-- Cria o manuseio da ferramenta
+local Handle = Instance.new("Part")
+Handle.Name = "Handle"
+Handle.Size = Vector3.new(1, 1, 1)
+Handle.Anchored = false
+Handle.CanCollide = false
+Handle.BrickColor = BrickColor.new("Bright blue")
+Handle.Material = Enum.Material.SmoothPlastic
+Handle.Parent = Tool
+
+-- Função para criar e explodir a mina
+local function criarMina()
+    -- Cria a mina
+    local mina = Instance.new("Part")
+    mina.Size = Vector3.new(2, 2, 2)
+    mina.Position = game.Players.LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0)
+    mina.Anchored = false
+    mina.CanCollide = false
+    mina.BrickColor = BrickColor.new("Bright red")
+    mina.Material = Enum.Material.Metal
+    mina.Parent = workspace
+
+    -- Cria uma explosão
+    local explosao = Instance.new("Explosion")
+    explosao.Position = mina.Position
+    explosao.BlastRadius = 10
+    explosao.BlastPressure = 0
+    explosao.ExplosionType = Enum.ExplosionType.NoCraters
+    explosao.Parent = workspace
+
+    -- Adiciona o dano
+    explosao.DestroyJointRadiusPercent = 0
+    explosao.Hit:Connect(function(part, distance)
+        if part.Parent:FindFirstChildOfClass("Humanoid") and part.Parent ~= game.Players.LocalPlayer.Character then
+            local humanoide = part.Parent:FindFirstChildOfClass("Humanoid")
+            humanoide:TakeDamage(50000)
+        end
+    end)
+
+    -- Remove a mina após a explosão
+    mina:Destroy()
+end
+
+-- Conectar a função de ativação ao evento de clique
+Tool.Activated:Connect(criarMina)
+
+-- Adiciona a ferramenta ao jogador
+local player = game.Players.LocalPlayer
+Tool.Parent = player.Backpack
