@@ -1,55 +1,238 @@
--- Cria a ferramenta
-local Tool = Instance.new("Tool")
-Tool.Name = "Mina"
-Tool.RequiresHandle = true
-Tool.CanBeDropped = false
+-- Script made by Cyber Alixiir https://alixiir.work
+-- Gui to Lua
+-- Version: 3.2
 
--- Cria o manuseio da ferramenta
-local Handle = Instance.new("Part")
-Handle.Name = "Handle"
-Handle.Size = Vector3.new(1, 1, 1)
-Handle.Anchored = false
-Handle.CanCollide = false
-Handle.BrickColor = BrickColor.new("Bright blue")
-Handle.Material = Enum.Material.SmoothPlastic
-Handle.Parent = Tool
-
--- Função para criar e explodir a mina
-local function criarMina()
-    -- Cria a mina
-    local mina = Instance.new("Part")
-    mina.Size = Vector3.new(2, 2, 2)
-    mina.Position = game.Players.LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0)
-    mina.Anchored = false
-    mina.CanCollide = false
-    mina.BrickColor = BrickColor.new("Bright red")
-    mina.Material = Enum.Material.Metal
-    mina.Parent = workspace
-
-    -- Cria uma explosão
-    local explosao = Instance.new("Explosion")
-    explosao.Position = mina.Position
-    explosao.BlastRadius = 10
-    explosao.BlastPressure = 0
-    explosao.ExplosionType = Enum.ExplosionType.NoCraters
-    explosao.Parent = workspace
-
-    -- Adiciona o dano
-    explosao.DestroyJointRadiusPercent = 0
-    explosao.Hit:Connect(function(part, distance)
-        if part.Parent:FindFirstChildOfClass("Humanoid") and part.Parent ~= game.Players.LocalPlayer.Character then
-            local humanoide = part.Parent:FindFirstChildOfClass("Humanoid")
-            humanoide:TakeDamage(50000)
-        end
-    end)
-
-    -- Remove a mina após a explosão
-    mina:Destroy()
-end
-
--- Conectar a função de ativação ao evento de clique
-Tool.Activated:Connect(criarMina)
-
--- Adiciona a ferramenta ao jogador
+-- Instances:
 local player = game.Players.LocalPlayer
-Tool.Parent = player.Backpack
+local ScreenGui = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local TextLabel = Instance.new("TextLabel")
+local TextLabel_2 = Instance.new("TextLabel")
+local TextButton = Instance.new("TextButton")
+local TextButton_2 = Instance.new("TextButton")
+local TextButton_3 = Instance.new("TextButton")
+local TextButton_4 = Instance.new("TextButton")
+local TextButton_5 = Instance.new("TextButton")
+local worked = "Button Worked"
+
+--Properties:
+
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(47, 255, 43)
+Frame.BackgroundTransparency = 0.700
+Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Frame.BorderSizePixel = 0
+Frame.Position = UDim2.new(0.0142215565, 0, 0.365196079, 0)
+Frame.Size = UDim2.new(0, 207, 0, 291)
+
+TextLabel.Parent = Frame
+TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel.BackgroundTransparency = 1.000
+TextLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+TextLabel.BorderSizePixel = 0
+TextLabel.Size = UDim2.new(0, 207, 0, 50)
+TextLabel.Font = Enum.Font.Unknown
+TextLabel.Text = "Cyber Free Menu V1"
+TextLabel.TextColor3 = Color3.fromRGB(0, 255, 38)
+TextLabel.TextSize = 15.000
+
+TextLabel_2.Parent = Frame
+TextLabel_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_2.BackgroundTransparency = 1.000
+TextLabel_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+TextLabel_2.BorderSizePixel = 0
+TextLabel_2.Position = UDim2.new(0, 0, 0.910652936, 0)
+TextLabel_2.Size = UDim2.new(0, 207, 0, 26)
+TextLabel_2.Font = Enum.Font.Unknown
+TextLabel_2.Text = "https://alixiir.work"
+TextLabel_2.TextColor3 = Color3.fromRGB(0, 255, 38)
+TextLabel_2.TextSize = 15.000
+
+TextButton.Parent = Frame
+TextButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextButton.BackgroundTransparency = 0.800
+TextButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+TextButton.BorderSizePixel = 0
+TextButton.Position = UDim2.new(0.0338164233, 0, 0.494845361, 0)
+TextButton.Size = UDim2.new(0, 193, 0, 34)
+TextButton.Font = Enum.Font.Arial
+TextButton.Text = "WalkSpeed 16"
+TextButton.TextColor3 = Color3.fromRGB(4, 255, 0)
+TextButton.TextSize = 23.000
+TextButton.MouseButton1Down:connect(function()
+	-- Get the player
+	local player = game.Players.LocalPlayer
+
+	-- Set the walkspeed
+	player.Character.Humanoid.WalkSpeed = 16
+	print(worked)
+
+end)
+
+TextButton_2.Parent = Frame
+TextButton_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextButton_2.BackgroundTransparency = 0.800
+TextButton_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+TextButton_2.BorderSizePixel = 0
+TextButton_2.Position = UDim2.new(0.0338164233, 0, 0.206185564, 0)
+TextButton_2.Size = UDim2.new(0, 193, 0, 34)
+TextButton_2.Font = Enum.Font.Arial
+TextButton_2.Text = "Start Fly"
+TextButton_2.TextColor3 = Color3.fromRGB(4, 255, 0)
+TextButton_2.TextSize = 23.000
+TextButton_2.MouseButton1Down:connect(function()
+	-- Check if already flying
+	if isFlying then
+		return
+	end
+-- Script made by Cyber Alixiir https://alixiir.work
+	-- Start flying upwards
+	isFlying = true
+	local humanoid = player.Character.Humanoid
+	local jumpVelocity = 50  -- Adjust as needed
+
+	-- Function to apply jump continuously
+	local function jumpUp()
+		while isFlying do
+			humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+			humanoid:Move(Vector3.new(0, jumpVelocity, 0))
+			wait(0.1)  -- Adjust the delay between jumps
+		end
+	end
+
+	-- Start the jump coroutine
+	coroutine.wrap(jumpUp)()
+
+end)
+
+TextButton_3.Parent = Frame
+TextButton_3.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextButton_3.BackgroundTransparency = 0.800
+TextButton_3.BorderColor3 = Color3.fromRGB(0, 0, 0)
+TextButton_3.BorderSizePixel = 0
+TextButton_3.Position = UDim2.new(0.0338164233, 0, 0.350515455, 0)
+TextButton_3.Size = UDim2.new(0, 193, 0, 34)
+TextButton_3.Font = Enum.Font.Arial
+TextButton_3.Text = "Stop Fly"
+TextButton_3.TextColor3 = Color3.fromRGB(4, 255, 0)
+TextButton_3.TextSize = 23.000
+TextButton_3.MouseButton1Down:connect(function()
+	-- Check if not flying
+	if not isFlying then
+		return
+	end
+
+	-- Stop flying upwards
+	isFlying = false
+	local humanoid = player.Character.Humanoid
+	humanoid.PlatformStand = false
+	humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+
+end)
+
+-- flying ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+TextButton_4.Parent = Frame
+TextButton_4.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextButton_4.BackgroundTransparency = 0.800
+TextButton_4.BorderColor3 = Color3.fromRGB(0, 0, 0)
+TextButton_4.BorderSizePixel = 0
+TextButton_4.Position = UDim2.new(0.0338164233, 0, 0.642611682, 0)
+TextButton_4.Size = UDim2.new(0, 193, 0, 34)
+TextButton_4.Font = Enum.Font.Arial
+TextButton_4.Text = "WalkSpeed 75"
+TextButton_4.TextColor3 = Color3.fromRGB(4, 255, 0)
+TextButton_4.TextSize = 23.000
+TextButton_4.MouseButton1Down:connect(function()
+	-- Get the player
+	local player = game.Players.LocalPlayer
+
+	-- Set the walkspeed
+	player.Character.Humanoid.WalkSpeed = 75
+	print(worked)
+	
+end)
+
+isFlying = false
+
+TextButton_5.Parent = Frame
+TextButton_5.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextButton_5.BackgroundTransparency = 0.800
+TextButton_5.BorderColor3 = Color3.fromRGB(0, 0, 0)
+TextButton_5.BorderSizePixel = 0
+TextButton_5.Position = UDim2.new(0.0338164233, 0, 0.793814421, 0)
+TextButton_5.Size = UDim2.new(0, 193, 0, 34)
+TextButton_5.Font = Enum.Font.Arial
+TextButton_5.Text = "Nametag ESP"
+TextButton_5.TextColor3 = Color3.fromRGB(255, 0, 0)
+TextButton_5.TextSize = 20.000
+TextButton_5.MouseButton1Down:connect(function()
+	-- Function to create a Billboard GUI and Box GUI for a player
+	local function createGUIs(player)
+		-- Create Billboard GUI
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = "PlayerNameBillboard"
+		billboard.Size = UDim2.new(0, 100, 0, 50)  -- Adjust size as needed
+		billboard.AlwaysOnTop = true
+		billboard.StudsOffset = Vector3.new(0, 3, 0)  -- Offset above the player's head
+
+		-- Create TextLabel for player's name
+		local nameLabel = Instance.new("TextLabel", billboard)
+		nameLabel.Text = player.Name
+		nameLabel.Size = UDim2.new(1, 0, 1, 0)
+		nameLabel.TextScaled = true
+		nameLabel.TextColor3 = Color3.new(1, 1, 1)
+		nameLabel.BackgroundTransparency = 1
+
+		-- Parent Billboard to player's character's Head
+		local character = player.Character or player.CharacterAdded:Wait()
+		billboard.Parent = character:WaitForChild("Head")
+
+		-- Create Box GUI around player's character
+		local box = Instance.new("Part")
+		box.Name = "PlayerBox"
+		box.Size = character:GetExtentsSize() + Vector3.new(0, 1, 0)  -- Adjust size to cover the character
+		box.Color = Color3.new(1, 0, 0)  -- Red color (adjust as needed)
+		box.Transparency = 0.5  -- Adjust transparency as needed
+		box.Anchored = true
+		box.CanCollide = false
+		box.Parent = character
+
+		-- Keep the box GUI positioned around the player
+		local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+		box.Position = humanoidRootPart.Position
+
+		-- Update box position when character moves
+		character.HumanoidRootPart:GetPropertyChangedSignal("Position"):Connect(function()
+			box.Position = humanoidRootPart.Position
+		end)
+-- Script made by Cyber Alixiir https://alixiir.work
+		-- Handle player leaving
+		player.CharacterRemoving:Connect(function()
+			billboard:Destroy()
+			box:Destroy()
+		end)
+	end
+-- Script made by Cyber Alixiir https://alixiir.work
+	-- Function to initialize for all existing players and new players
+	local function setupPlayers()
+		for _, player in ipairs(game.Players:GetPlayers()) do
+			createGUIs(player)
+		end
+		game.Players.PlayerAdded:Connect(function(player)
+			createGUIs(player)
+		end)
+	end
+
+	-- Initialize for existing players
+	setupPlayers()
+
+	-- Handle players joining after initialization
+	game.Players.PlayerAdded:Connect(function(player)
+		createGUIs(player)
+	end)
+-- Script made by Cyber Alixiir https://alixiir.work
+end)
