@@ -28,22 +28,8 @@ local TeleportSection = PlayerControlsTab:AddSection({
     Name = "Teleport"
 })
 
--- Adicionando seção "Noclip" à aba "Player Controls"
-local NoclipSection = PlayerControlsTab:AddSection({
-    Name = "Noclip"
-})
-
--- Variável para armazenar o valor da velocidade
-local speedValue = 16  -- Valor padrão da velocidade
-local speedEnabled = false  -- Estado do hack de velocidade
-
--- Variável para armazenar o valor do pulo
-local jumpPowerValue = 50  -- Valor padrão do pulo
-local jumpEnabled = false  -- Estado do hack de pulo
-
--- Variáveis para teleporte
-local savedPosition = nil  -- Armazena o ponto de retorno salvo
-local noclipEnabled = false  -- Estado do noclip
+-- Variáveis para controle de teleporte
+local returnPoint = nil
 
 -- Função para atualizar a velocidade do jogador
 local function updateSpeed(value)
@@ -57,50 +43,55 @@ end
 local function updateJumpPower(value)
     local character = game.Players.LocalPlayer.Character
     if character and character:FindFirstChild("Humanoid") then
-        character.Humanoid.UseJumpPower = true  -- Garantir que UseJumpPower esteja ativado
+        character.Humanoid.UseJumpPower = true
         character.Humanoid.JumpPower = value
     end
 end
 
--- Função para ativar/desativar noclip
-local function toggleNoclip()
-    noclipEnabled = not noclipEnabled
-    local character = game.Players.LocalPlayer.Character
+-- Função para atualizar o status do botão
+local function updateStatus(section, enabled, text)
+    section:SetText(text)
+    section:SetTextColor(enabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0))
+end
 
-    if character then
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = not noclipEnabled
-            end
+-- Função para teletransportar o jogador para um jogador pelo nome
+local function teleportToPlayer(name)
+    local targetPlayer = game.Players:FindFirstChild(name)
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local character = game.Players.LocalPlayer.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            character.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame
+            OrionLib:MakeNotification({
+                Name = "Sucesso",
+                Content = "Teleportado para " .. name,
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
         end
+    else
+        OrionLib:MakeNotification({
+            Name = "Erro",
+            Content = "Jogador não encontrado: " .. name,
+            Image = "rbxassetid://4483345998",
+            Time = 5
+        })
     end
+end
 
-    if noclipEnabled then
-        game:GetService("RunService").Stepped:Connect(function()
-            if noclipEnabled and character then
-                for _, part in pairs(character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end
-        end)
+-- Função para atualizar a lista de jogadores no dropdown
+local function updatePlayerList()
+    local playerNames = {}
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
     end
-
-    print(noclipEnabled and "Noclip Ativado" or "Noclip Desativado")
-    OrionLib:MakeNotification({
-        Name = "Noclip",
-        Content = noclipEnabled and "Noclip Ativado" or "Noclip Desativado",
-        Image = "rbxassetid://4483345998",
-        Time = 5
-    })
+    return playerNames
 end
 
 -- Função para salvar o ponto de retorno
 local function saveReturnPoint()
     local character = game.Players.LocalPlayer.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
-        savedPosition = character.HumanoidRootPart.CFrame
+        returnPoint = character.HumanoidRootPart.CFrame
         OrionLib:MakeNotification({
             Name = "Ponto Salvo",
             Content = "Ponto de retorno salvo com sucesso!",
@@ -111,20 +102,22 @@ local function saveReturnPoint()
 end
 
 -- Função para retornar ao ponto salvo
-local function returnToSavedPoint()
-    local character = game.Players.LocalPlayer.Character
-    if savedPosition and character and character:FindFirstChild("HumanoidRootPart") then
-        character.HumanoidRootPart.CFrame = savedPosition
-        OrionLib:MakeNotification({
-            Name = "Teleporte",
-            Content = "Teletransportado para o ponto salvo!",
-            Image = "rbxassetid://4483345998",
-            Time = 5
-        })
+local function teleportToReturnPoint()
+    if returnPoint then
+        local character = game.Players.LocalPlayer.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            character.HumanoidRootPart.CFrame = returnPoint
+            OrionLib:MakeNotification({
+                Name = "Retorno",
+                Content = "Teleportado para o ponto salvo!",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        end
     else
         OrionLib:MakeNotification({
             Name = "Erro",
-            Content = "Nenhum ponto salvo encontrado.",
+            Content = "Nenhum ponto de retorno salvo!",
             Image = "rbxassetid://4483345998",
             Time = 5
         })
@@ -153,10 +146,10 @@ SpeedSection:AddButton({
 SpeedSection:AddTextbox({
     Name = "Definir velocidade",
     Default = tostring(speedValue),
-    TextDisappear = false,  -- Mantém o valor na caixa de texto
+    TextDisappear = false,
     Callback = function(value)
         local newValue = tonumber(value)
-        if newValue and newValue >= 0 e newValue <= 99999 then
+        if newValue and newValue >= 0 and newValue <= 99999 then
             speedValue = newValue
             if speedEnabled then
                 updateSpeed(speedValue)
@@ -170,7 +163,7 @@ SpeedSection:AddTextbox({
             })
         end
     end,
-    Width = 200  -- Ajusta a largura da caixa de texto
+    Width = 200
 })
 
 -- Adicionando um botão para ativar/desativar o "hack de pulo" na seção de pulo
@@ -195,10 +188,10 @@ JumpSection:AddButton({
 JumpSection:AddTextbox({
     Name = "Definir pulo",
     Default = tostring(jumpPowerValue),
-    TextDisappear = false,  -- Mantém o valor na caixa de texto
+    TextDisappear = false,
     Callback = function(value)
         local newValue = tonumber(value)
-        if newValue and newValue >= 0 e newValue <= 99999 then
+        if newValue and newValue >= 0 and newValue <= 99999 then
             jumpPowerValue = newValue
             if jumpEnabled then
                 updateJumpPower(jumpPowerValue)
@@ -212,13 +205,13 @@ JumpSection:AddTextbox({
             })
         end
     end,
-    Width = 200  -- Ajusta a largura da caixa de texto
+    Width = 200
 })
 
 -- Adicionando uma lista suspensa (dropdown) para selecionar o jogador na seção de teleporte
 TeleportSection:AddDropdown({
     Name = "Selecionar Jogador",
-    Options = updatePlayerList(),  -- Atualiza a lista de jogadores
+    Options = updatePlayerList(),
     Callback = function(selectedName)
         if selectedName then
             teleportToPlayer(selectedName)
@@ -226,22 +219,19 @@ TeleportSection:AddDropdown({
     end
 })
 
--- Adicionando botão para salvar o ponto de retorno
+-- Adicionando botões para salvar ponto de retorno e teletransportar para o ponto salvo na seção de teleporte
 TeleportSection:AddButton({
     Name = "Salvar Ponto de Retorno",
-    Callback = saveReturnPoint
+    Callback = function()
+        saveReturnPoint()
+    end
 })
 
--- Adicionando botão para retornar ao ponto salvo
 TeleportSection:AddButton({
-    Name = "Voltar ao Ponto Salvo",
-    Callback = returnToSavedPoint
-})
-
--- Adicionando botão para ativar/desativar noclip
-NoclipSection:AddButton({
-    Name = "Noclip",
-    Callback = toggleNoclip
+    Name = "Teletransportar para Ponto Salvo",
+    Callback = function()
+        teleportToReturnPoint()
+    end
 })
 
 -- Atualiza a lista de jogadores periodicamente
@@ -259,6 +249,6 @@ end)
 OrionLib:MakeNotification({
     Name = "Bem-vindo!",
     Content = "Você entrou no hub atualizado com novas funcionalidades!",
-    Image = "rbxassetid://1234567890",  -- Atualize com o ID da sua imagem
+    Image = "rbxassetid://1234567890",
     Time = 10
 })
