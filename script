@@ -29,7 +29,7 @@ local TeleportSection = PlayerControlsTab:AddSection({
 })
 
 -- Variáveis para controle de teleporte
-local returnPoint = nil
+local returnPoints = {}
 
 -- Função para atualizar a velocidade do jogador
 local function updateSpeed(value)
@@ -48,65 +48,27 @@ local function updateJumpPower(value)
     end
 end
 
--- Função para atualizar o status do botão
-local function updateStatus(section, enabled, text)
-    section:SetText(text)
-    section:SetTextColor(enabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0))
-end
-
--- Função para teletransportar o jogador para um jogador pelo nome
-local function teleportToPlayer(name)
-    local targetPlayer = game.Players:FindFirstChild(name)
-    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local character = game.Players.LocalPlayer.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            character.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame
-            OrionLib:MakeNotification({
-                Name = "Sucesso",
-                Content = "Teleportado para " .. name,
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
-        end
-    else
-        OrionLib:MakeNotification({
-            Name = "Erro",
-            Content = "Jogador não encontrado: " .. name,
-            Image = "rbxassetid://4483345998",
-            Time = 5
-        })
-    end
-end
-
--- Função para atualizar a lista de jogadores no dropdown
-local function updatePlayerList()
-    local playerNames = {}
-    for _, player in ipairs(game.Players:GetPlayers()) do
-        table.insert(playerNames, player.Name)
-    end
-    return playerNames
-end
-
--- Função para salvar o ponto de retorno
+-- Função para salvar um ponto de retorno
 local function saveReturnPoint()
     local character = game.Players.LocalPlayer.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
-        returnPoint = character.HumanoidRootPart.CFrame
+        table.insert(returnPoints, character.HumanoidRootPart.CFrame)
         OrionLib:MakeNotification({
             Name = "Ponto Salvo",
             Content = "Ponto de retorno salvo com sucesso!",
             Image = "rbxassetid://4483345998",
             Time = 5
         })
+        updateReturnPoints()
     end
 end
 
--- Função para retornar ao ponto salvo
-local function teleportToReturnPoint()
-    if returnPoint then
+-- Função para teletransportar para um ponto de retorno específico
+local function teleportToReturnPoint(index)
+    if returnPoints[index] then
         local character = game.Players.LocalPlayer.Character
         if character and character:FindFirstChild("HumanoidRootPart") then
-            character.HumanoidRootPart.CFrame = returnPoint
+            character.HumanoidRootPart.CFrame = returnPoints[index]
             OrionLib:MakeNotification({
                 Name = "Retorno",
                 Content = "Teleportado para o ponto salvo!",
@@ -117,109 +79,45 @@ local function teleportToReturnPoint()
     else
         OrionLib:MakeNotification({
             Name = "Erro",
-            Content = "Nenhum ponto de retorno salvo!",
+            Content = "Ponto de retorno inválido!",
             Image = "rbxassetid://4483345998",
             Time = 5
         })
     end
 end
 
--- Adicionando um botão para ativar/desativar o "hack de velocidade" na seção de velocidade
-SpeedSection:AddButton({
-    Name = "Velocidade",
-    Callback = function()
-        speedEnabled = not speedEnabled
-        if speedEnabled then
-            speedValue = 50
-            updateSpeed(speedValue)
-            print("Speed Hack Ativado")
-        else
-            speedValue = 16
-            updateSpeed(speedValue)
-            print("Speed Hack Desativado")
-        end
-        updateStatus(SpeedSection, speedEnabled, "Velocidade: " .. (speedEnabled and "Ativado" or "Desativado"))
-    end
-})
+-- Função para excluir um ponto de retorno
+local function deleteReturnPoint(index)
+    table.remove(returnPoints, index)
+    OrionLib:MakeNotification({
+        Name = "Ponto Removido",
+        Content = "Ponto de retorno removido com sucesso!",
+        Image = "rbxassetid://4483345998",
+        Time = 5
+    })
+    updateReturnPoints()
+end
 
--- Adicionando uma caixa de texto para ajustar a velocidade na seção de velocidade
-SpeedSection:AddTextbox({
-    Name = "Definir velocidade",
-    Default = tostring(speedValue),
-    TextDisappear = false,
-    Callback = function(value)
-        local newValue = tonumber(value)
-        if newValue and newValue >= 0 and newValue <= 99999 then
-            speedValue = newValue
-            if speedEnabled then
-                updateSpeed(speedValue)
+-- Função para atualizar a lista de pontos de retorno na UI
+local function updateReturnPoints()
+    TeleportSection:Clear()
+    for i, point in ipairs(returnPoints) do
+        TeleportSection:AddButton({
+            Name = "Ponto de Retorno " .. i,
+            Callback = function()
+                teleportToReturnPoint(i)
             end
-        else
-            OrionLib:MakeNotification({
-                Name = "Erro",
-                Content = "Por favor, insira um valor entre 0 e 99999 para a velocidade.",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
-        end
-    end,
-    Width = 200
-})
-
--- Adicionando um botão para ativar/desativar o "hack de pulo" na seção de pulo
-JumpSection:AddButton({
-    Name = "Pulo",
-    Callback = function()
-        jumpEnabled = not jumpEnabled
-        if jumpEnabled then
-            jumpPowerValue = 100
-            updateJumpPower(jumpPowerValue)
-            print("Hack de Pulo Ativado")
-        else
-            jumpPowerValue = 50
-            updateJumpPower(jumpPowerValue)
-            print("Hack de Pulo Desativado")
-        end
-        updateStatus(JumpSection, jumpEnabled, "Pulo: " .. (jumpEnabled and "Ativado" or "Desativado"))
-    end
-})
-
--- Adicionando uma caixa de texto para ajustar a altura do pulo na seção de pulo
-JumpSection:AddTextbox({
-    Name = "Definir pulo",
-    Default = tostring(jumpPowerValue),
-    TextDisappear = false,
-    Callback = function(value)
-        local newValue = tonumber(value)
-        if newValue and newValue >= 0 and newValue <= 99999 then
-            jumpPowerValue = newValue
-            if jumpEnabled then
-                updateJumpPower(jumpPowerValue)
+        })
+        TeleportSection:AddButton({
+            Name = "X",
+            Callback = function()
+                deleteReturnPoint(i)
             end
-        else
-            OrionLib:MakeNotification({
-                Name = "Erro",
-                Content = "Por favor, insira um valor entre 0 e 99999 para o pulo.",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
-        end
-    end,
-    Width = 200
-})
-
--- Adicionando uma lista suspensa (dropdown) para selecionar o jogador na seção de teleporte
-TeleportSection:AddDropdown({
-    Name = "Selecionar Jogador",
-    Options = updatePlayerList(),
-    Callback = function(selectedName)
-        if selectedName then
-            teleportToPlayer(selectedName)
-        end
+        })
     end
-})
+end
 
--- Adicionando botões para salvar ponto de retorno e teletransportar para o ponto salvo na seção de teleporte
+-- Adicionando botões para salvar ponto de retorno na seção de teleporte
 TeleportSection:AddButton({
     Name = "Salvar Ponto de Retorno",
     Callback = function()
@@ -227,23 +125,8 @@ TeleportSection:AddButton({
     end
 })
 
-TeleportSection:AddButton({
-    Name = "Teletransportar para Ponto Salvo",
-    Callback = function()
-        teleportToReturnPoint()
-    end
-})
-
--- Atualiza a lista de jogadores periodicamente
-game.Players.PlayerAdded:Connect(function()
-    local dropdown = TeleportSection:GetDropdown("Selecionar Jogador")
-    dropdown:SetOptions(updatePlayerList())
-end)
-
-game.Players.PlayerRemoving:Connect(function()
-    local dropdown = TeleportSection:GetDropdown("Selecionar Jogador")
-    dropdown:SetOptions(updatePlayerList())
-end)
+-- Atualiza a lista de pontos de retorno quando um novo ponto é salvo
+updateReturnPoints()
 
 -- Notificação de boas-vindas
 OrionLib:MakeNotification({
